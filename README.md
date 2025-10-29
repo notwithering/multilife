@@ -6,6 +6,8 @@ change the species you want to spawn in specie.go and other stuff in other files
 
 run the program and it outputs `output.mp4` file with the video replay of the simulation
 
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/0376cb50-4bb9-4c63-8097-e272e1ef234e" />
+
 https://files.catbox.moe/q0mwlr.mp4
 
 ## credits
