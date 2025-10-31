@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image/color"
 	"main/ecosystem"
 	"main/gfx/font"
 	"main/renderer"
@@ -26,6 +27,8 @@ func newConfig() config {
 	sizeDivider := 4
 	config.Ecosystem.Width = 1920 / sizeDivider
 	config.Ecosystem.Height = 1080 / sizeDivider
+
+	config.Ecosystem.Render.BackgroundColor = color.Black
 
 	config.Ecosystem.Region.Density = 50 //%
 	config.Ecosystem.Region.Padding = 10 //px

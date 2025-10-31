@@ -1,15 +1,10 @@
 package ecosystem
 
 import (
-	"image/color"
 	"main/gfx"
 	"main/rng"
 	"main/specie"
 	"math"
-)
-
-var (
-	ecosystemBackgroundColor color.Color = color.Black
 )
 
 const (
@@ -29,7 +24,7 @@ func (e *Ecosystem) Render(buf *gfx.Buffer) {
 		for x := range e.config.Width {
 			specieId := e.world[e.index(x, y)]
 
-			col := ecosystemBackgroundColor
+			col := e.config.Render.BackgroundColor
 			if specieId != EmptyCell {
 				col = e.Species[specieId].Color
 			}

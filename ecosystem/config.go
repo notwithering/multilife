@@ -1,6 +1,9 @@
 package ecosystem
 
-import "main/specie"
+import (
+	"image/color"
+	"main/specie"
+)
 
 type Config struct {
 	Species []specie.SpecieConfig
@@ -10,5 +13,9 @@ type Config struct {
 	Region struct {
 		Density int
 		Padding int
+	}
+
+	Render struct {
+		BackgroundColor color.Color
 	}
 }
