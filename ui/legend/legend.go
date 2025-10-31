@@ -1,14 +1,8 @@
 package legend
 
 import (
-	"image/color"
 	"main/gfx"
 	"main/specie"
-)
-
-var (
-	legendBackgroundColor = color.RGBA{0, 0, 0, 255 / 2}
-	legendFontColor       = color.RGBA{170, 170, 170, 255}
 )
 
 type Legend struct {
@@ -46,7 +40,7 @@ func (l *Legend) Draw(buf *gfx.Buffer) {
 
 	buf.DrawRect(l.config.X, l.config.Y,
 		rectWidth, rectHeight,
-		legendBackgroundColor,
+		l.config.BackgroundColor,
 	)
 
 	contentX := l.config.X + l.config.Padding
@@ -61,6 +55,6 @@ func (l *Legend) Draw(buf *gfx.Buffer) {
 		textY := colorIndicatorY
 
 		buf.DrawRect(colorIndicatorX, colorIndicatorY, colorIndicatorSize, colorIndicatorSize, specie.Color)
-		buf.DrawString(textX, textY, legendFontColor, fnt, specie.Name)
+		buf.DrawString(textX, textY, l.config.FontColor, fnt, specie.Name)
 	}
 }

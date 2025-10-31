@@ -47,6 +47,8 @@ func newConfig() config {
 	config.UI.Legend.Y = 1
 	config.UI.Legend.Padding = 1
 	config.UI.Legend.Font = font.Nanofont3x4
+	config.UI.Legend.BackgroundColor = color.RGBA{0, 0, 0, 255 / 2}
+	config.UI.Legend.FontColor = color.RGBA{170, 170, 170, 255}
 
 	config.RNG.Seed = 1
 
