@@ -2,17 +2,60 @@
 
 a program to place multiple conway's-game-of-life-like cellular automata in a single ecosystem that can all interact with eachother
 
-change the species you want to spawn in specie.go and other stuff in other files like ecosystem size in ecosystem.go and video fps in video.go and seed in rng.go and stuff
-
 run the program and it outputs `output.mp4` file with the video replay of the simulation
+
+https://www.youtube.com/watch?v=zpPAf_UoUCc
 
 <img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/0376cb50-4bb9-4c63-8097-e272e1ef234e" />
 
 <img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/a8d23037-b348-4a47-be6e-d5472f48d846" />
 
-https://files.catbox.moe/q0mwlr.mp4
-
 ## credits
 
-- me
 - Michaelangel007's [nanofont3x4](https://github.com/Michaelangel007/nanofont3x4)
+
+## technical overview of engine
+
+- each cell can belong to a species each with its own `B/S` rule
+- the world is a wrapped torodial grid
+- at every step, the engine computes the next state
+
+### neighbor counting
+
+for each cell:
+
+- count total neighbors in `totalNeighbors`
+- count per-species neighbors in `specieNeighbors`
+
+### survival
+
+if the current cell is alive, it checks its own species survival condition with its total neighbors of any specie, if the rule fails, the cell dies or could be later replaced by a birth of a different specie
+
+### birth / takeover
+
+each specie independently checks if it can birth at this location using its own neighbor count (`specieNeighbors[specie.Id]`). a specie is considered a candidate for birth if:
+
+- the current cell is alive and surviving, and the aggressing specie is not the same as the current cells specie
+- the current cell is dead and a
+
+species can attack other species cells, so survival doesnt make a cell invincible
+
+### handling conflicts
+
+each candidate has a weight equal to its local density (the ratio of its neighbors of its own specie multiplied by 100 to the total amount of neighbors plus 1)
+
+```go
+weight = (neighborsOfSpecie * 100) / (totalNeighbors + 1)
+```
+
+- the one with the highest weight wins
+- if two or more share the highest weight, nothing happens and the current cell remains in its current state
+
+### summary
+
+- each cell checks all species neighbor counts
+- each specie can birth into a cell if its birth rule is met
+- the current cell can survive if its survival rule is met
+- if multiple species can birth at the cell, the one with the highest local neighbor density (`ownSpecieNeighbors/(totalNeighbors + 1)`)
+- if theres a tie, the cell is left untouched
+- species can freely replace others cells

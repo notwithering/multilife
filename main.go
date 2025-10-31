@@ -2,50 +2,45 @@ package main
 
 import (
 	"fmt"
+	"main/ecosystem"
+	"main/gfx"
+	"main/renderer"
+	"main/rng"
+	"main/specie"
+	"main/ui/legend"
 )
 
 func main() {
-	var compiledSpecies []*compiledSpecie
-	for i, specie := range species {
-		compiled := specie.compile()
-		compiled.id = i
-		if randomColors {
-			compiled.color = randomColor()
-		}
-		compiledSpecies = append(compiledSpecies, compiled)
-	}
+	config := newConfig()
+	rng.InitRNG(config.RNG)
 
-	rng.Shuffle(len(compiledSpecies), func(i, j int) {
-		compiledSpecies[i], compiledSpecies[j] = compiledSpecies[j], compiledSpecies[i]
-	})
+	compiledSpecies := specie.CompileSpecies(config.Ecosystem.Species)
+	// rng.Rand.Shuffle(len(compiledSpecies), func(i, j int) {
+	// 	compiledSpecies[i], compiledSpecies[j] = compiledSpecies[j], compiledSpecies[i]
+	// })
 
-	renderer, err := newRenderer()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	if err := renderer.start(); err != nil {
+	ren := renderer.NewRenderer(config.Renderer)
+	if err := ren.Start(); err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	ecosystem := newEcosystem(compiledSpecies)
-	legend := newLegend(compiledSpecies)
+	eco := ecosystem.NewEcosystem(config.Ecosystem, compiledSpecies)
+	leg := legend.NewLegend(config.UI.Legend, compiledSpecies)
+	buf := gfx.NewBuffer(config.Renderer.Video.SourceWidth, config.Renderer.Video.SourceHeight)
 
-	buf := make([]byte, ecosystemSizeX*ecosystemSizeY*3)
+	for i := range config.Renderer.Video.Length {
+		fmt.Printf("\r%d/%d (%.1f%%)", i+1, config.Renderer.Video.Length, float32(i+1)/float32(config.Renderer.Video.Length)*100)
 
-	for i := range videoFrames {
-		fmt.Printf("\r%d/%d (%.1f%%)", i+1, videoFrames, float32(i+1)/float32(videoFrames)*100)
-
-		ecosystem.render(buf)
-		if legendEnabled {
-			legend.draw(buf)
+		eco.Render(buf)
+		if config.UI.Legend.Enabled {
+			leg.Draw(buf)
 		}
 
-		renderer.pipe.Write(buf)
+		ren.Write(buf)
 
 		// start := time.Now()
-		ecosystem.step()
+		eco.Step()
 		// fmt.Printf("%v\n", time.Since(start))
 	}
 }
