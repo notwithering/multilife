@@ -16,6 +16,6 @@ func NewUI(config Config, species []*specie.CompiledSpecie) UI {
 	}
 }
 
-func (ui *UI) DrawUI(buf *gfx.Buffer) {
+func (ui *UI) Draw(buf *gfx.Buffer) {
 	ui.legend.Draw(buf)
 }

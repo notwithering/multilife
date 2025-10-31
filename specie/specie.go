@@ -12,14 +12,16 @@ type SpecieConfig struct {
 	Color color.Color
 }
 
+type SpecieId uint8
+
 type CompiledSpecie struct {
-	Id    int
+	Id    SpecieId
 	Name  string
 	Rule  rule.CompiledRule
 	Color color.Color
 }
 
-var currentId int
+var currentId SpecieId
 
 func (c SpecieConfig) Compile() *CompiledSpecie {
 	specie := &CompiledSpecie{

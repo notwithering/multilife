@@ -52,6 +52,10 @@ func newConfig() config {
 
 	config.RNG.Seed = 1
 
+	config.Stats.Enabled = true
+	// statisticsIntervalInSeconds := 1 //seconds
+	config.Stats.Interval = 50
+
 	return config
 }
 
@@ -60,4 +64,8 @@ type config struct {
 	Renderer  renderer.Config
 	UI        ui.Config
 	RNG       rng.Config
+	Stats     struct {
+		Enabled  bool
+		Interval int
+	}
 }

@@ -5,17 +5,27 @@ import (
 	"main/rng"
 	"main/specie"
 	"math"
+	"runtime"
+	"sync"
+	"time"
 )
 
 const (
-	EmptyCell int = -1
+	EmptyCell specie.SpecieId = 255
 )
 
 type Ecosystem struct {
 	config    Config
 	Species   []*specie.CompiledSpecie
-	world     []int
-	nextWorld []int
+	world     []specie.SpecieId
+	nextWorld []specie.SpecieId
+	Stats     Stats
+}
+
+type Stats struct {
+	TotalPopulation    int
+	PopulationBySpecie []int
+	FrameTime          time.Duration
 }
 
 func (e *Ecosystem) Render(buf *gfx.Buffer) {
@@ -41,6 +51,10 @@ func (e *Ecosystem) Render(buf *gfx.Buffer) {
 
 func NewEcosystem(config Config, species []*specie.CompiledSpecie) Ecosystem {
 	var eco Ecosystem
+
+	if len(species) >= 255 {
+		species = species[:255]
+	}
 
 	eco.config = config
 	eco.Species = species
@@ -79,8 +93,8 @@ func NewEcosystem(config Config, species []*specie.CompiledSpecie) Ecosystem {
 	return eco
 }
 
-func newEmptyWorld(width, height int) []int {
-	var world = make([]int, width*height)
+func newEmptyWorld(width, height int) []specie.SpecieId {
+	var world = make([]specie.SpecieId, width*height)
 	for i := range world {
 		world[i] = EmptyCell
 	}
@@ -108,77 +122,109 @@ var neighborhood = [8][2]int{
 	{-1, 1}, {0, 1}, {1, 1},
 }
 
-func (e *Ecosystem) Step() {
+func (e *Ecosystem) Step(collectStats bool) {
 	minSpecieNeighbors := min(len(e.Species), len(neighborhood))
-	specieNeighbors := make([]int, minSpecieNeighbors)
-	candidates := make([]int, minSpecieNeighbors)
+	numWorkers := max(runtime.NumCPU(), e.config.Height)
+	rowsPerWorker := e.config.Height / numWorkers
 
-	for x := range e.config.Width {
-		for y := range e.config.Height {
-			for i := range specieNeighbors {
-				specieNeighbors[i] = 0
-			}
-
-			var totalNeighbors int
-			for _, offset := range neighborhood {
-				neighborX := (x + offset[0] + e.config.Width) % e.config.Width
-				neighborY := (y + offset[1] + e.config.Height) % e.config.Height
-				neighborSpecieId := e.world[e.index(neighborX, neighborY)]
-				if neighborSpecieId != EmptyCell {
-					specieNeighbors[neighborSpecieId]++
-					totalNeighbors++
-				}
-			}
-
-			cellId := e.world[e.index(x, y)]
-
-			var cell *specie.CompiledSpecie
-			cellIsAlive := false
-			cellWillLive := false
-
-			if cellId != EmptyCell {
-				cell = e.Species[cellId]
-				cellIsAlive = true
-				cellWillLive = cell.Rule.SurviveSet[totalNeighbors]
-			}
-
-			candidates = candidates[:0]
-
-			for specieId, neighborsOfSpecie := range specieNeighbors {
-				specie := e.Species[specieId]
-				shouldBirth := specie.Rule.BirthSet[neighborsOfSpecie]
-				differentSpecie := specieId != cellId
-
-				canCompete := shouldBirth &&
-					((cellIsAlive && differentSpecie) ||
-						(!cellIsAlive))
-
-				if canCompete {
-					candidates = append(candidates, specieId)
-				}
-			}
-
-			winnerId := EmptyCell
-			maxWeight := 0
-
-			for _, candidateId := range candidates {
-				neighbors := specieNeighbors[candidateId]
-				if neighbors > maxWeight {
-					maxWeight = neighbors
-					winnerId = candidateId
-				} else if neighbors == maxWeight {
-					winnerId = EmptyCell
-				}
-			}
-
-			if winnerId == EmptyCell && cellWillLive {
-				winnerId = cellId
-			}
-			e.nextWorld[e.index(x, y)] = winnerId
-		}
+	startTime := time.Now()
+	if collectStats {
+		e.Stats.TotalPopulation = 0
+		e.Stats.PopulationBySpecie = make([]int, len(e.Species))
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(numWorkers)
+
+	for worker := range numWorkers {
+		startY := worker * rowsPerWorker
+		endY := startY + rowsPerWorker
+		if worker == numWorkers-1 {
+			endY = e.config.Height
+		}
+
+		go func() {
+			defer wg.Done()
+			specieNeighbors := make([]specie.SpecieId, minSpecieNeighbors)
+			candidates := make([]specie.SpecieId, minSpecieNeighbors)
+
+			for y := startY; y < endY; y++ {
+				for x := range e.config.Width {
+					clear(specieNeighbors)
+
+					var totalNeighbors int
+					for _, offset := range neighborhood {
+						neighborX := (x + offset[0] + e.config.Width) % e.config.Width
+						neighborY := (y + offset[1] + e.config.Height) % e.config.Height
+						neighborSpecieId := e.world[e.index(neighborX, neighborY)]
+						if neighborSpecieId != EmptyCell {
+							specieNeighbors[neighborSpecieId]++
+							totalNeighbors++
+						}
+					}
+
+					cellId := e.world[e.index(x, y)]
+
+					var cell *specie.CompiledSpecie
+					cellIsAlive := false
+					cellWillLive := false
+
+					if cellId != EmptyCell {
+						cell = e.Species[cellId]
+						cellIsAlive = true
+						cellWillLive = cell.Rule.SurviveSet[totalNeighbors]
+
+						if collectStats {
+							e.Stats.TotalPopulation++
+							e.Stats.PopulationBySpecie[cellId]++
+						}
+					}
+
+					candidates = candidates[:0]
+
+					for specieIdInt, neighborsOfSpecie := range specieNeighbors {
+						specieId := specie.SpecieId(specieIdInt)
+						specie := e.Species[specieId]
+						shouldBirth := specie.Rule.BirthSet[neighborsOfSpecie]
+						differentSpecie := specieId != cellId
+
+						canCompete := shouldBirth &&
+							((cellIsAlive && differentSpecie) ||
+								(!cellIsAlive))
+
+						if canCompete {
+							candidates = append(candidates, specieId)
+						}
+					}
+
+					winnerId := EmptyCell
+					var maxWeight specie.SpecieId
+
+					for _, candidateId := range candidates {
+						neighbors := specieNeighbors[candidateId]
+						if neighbors > maxWeight {
+							maxWeight = neighbors
+							winnerId = candidateId
+						} else if neighbors == maxWeight {
+							winnerId = EmptyCell
+						}
+					}
+
+					if winnerId == EmptyCell && cellWillLive {
+						winnerId = cellId
+					}
+					e.nextWorld[e.index(x, y)] = winnerId
+				}
+			}
+		}()
+	}
+
+	wg.Wait()
 	e.world, e.nextWorld = e.nextWorld, e.world
+
+	if collectStats {
+		e.Stats.FrameTime = time.Since(startTime)
+	}
 }
 
 func (e *Ecosystem) index(x, y int) int {
