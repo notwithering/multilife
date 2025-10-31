@@ -41,23 +41,22 @@ if the current cell is alive, it checks its own species survival condition with 
 
 ### birth / takeover
 
-each specie independently checks if it can birth at this location using its own neighbor count (`specieNeighbors[specie.Id]`). a specie is considered a candidate for birth if:
+each specie independently checks if it can birth at this location using its own neighbor count (`specieNeighbors[specie.Id]`). a specie is considered a candidate for birth if the current cell meets the birth condition AND:
 
-- the current cell is alive and surviving, and the aggressing specie is not the same as the current cells specie
-- the current cell is dead and a
+- the current cell is alive, and the aggressing specie is not the same as the current cells specie, or
+- the current cell is dead
+
+```go
+canCompete := shouldBirth &&
+	((cellIsAlive && differentSpecie) ||
+		(!cellIsAlive))
+````
 
 species can attack other species cells, so survival doesnt make a cell invincible
 
 ### handling conflicts
 
-each candidate has a weight equal to its local density (the ratio of its neighbors of its own specie multiplied by 100 to the total amount of neighbors plus 1)
-
-```go
-weight = (neighborsOfSpecie * 100) / (totalNeighbors + 1)
-```
-
-- the one with the highest weight wins
-- if two or more share the highest weight, nothing happens and the current cell remains in its current state
+each candidate has a weight equal to the total number of neighbors of its own specie, the candidate with the most number of neighbors wins. if two or more share the highest weight, nothing happens and the current cell remains in its current state
 
 ### summary
 

@@ -17,35 +17,41 @@ const (
 )
 
 type Ecosystem struct {
-	config  Config
-	World   [][]int
-	Species []*specie.CompiledSpecie
+	config    Config
+	Species   []*specie.CompiledSpecie
+	world     []int
+	nextWorld []int
 }
 
-func (e Ecosystem) Render(buf *gfx.Buffer) {
-	i := 0
+func (e *Ecosystem) Render(buf *gfx.Buffer) {
 	for y := range e.config.Height {
+		idx := y * e.config.Width * 3
 		for x := range e.config.Width {
+			specieId := e.world[e.index(x, y)]
+
 			col := ecosystemBackgroundColor
-			specieId := e.World[x][y]
 			if specieId != EmptyCell {
-				specie := e.Species[specieId]
-				col = specie.Color
+				col = e.Species[specieId].Color
 			}
-			r, g, b_, _ := col.RGBA()
-			buf.Data[i+0] = uint8(r >> 8)
-			buf.Data[i+1] = uint8(g >> 8)
-			buf.Data[i+2] = uint8(b_ >> 8)
-			i += 3
+
+			r, g, b, _ := col.RGBA()
+			buf.Data[idx+0] = uint8(r >> 8)
+			buf.Data[idx+1] = uint8(g >> 8)
+			buf.Data[idx+2] = uint8(b >> 8)
+
+			idx += 3
 		}
 	}
 }
 
 func NewEcosystem(config Config, species []*specie.CompiledSpecie) Ecosystem {
 	var eco Ecosystem
+
 	eco.config = config
-	eco.World = newEmptyWorld(config.Width, config.Height)
 	eco.Species = species
+	eco.world = newEmptyWorld(config.Width, config.Height)
+	eco.nextWorld = newEmptyWorld(config.Width, config.Height)
+
 	columns, rows := computeGrid(len(species))
 
 	var regionWidth int = config.Width / columns
@@ -53,7 +59,7 @@ func NewEcosystem(config Config, species []*specie.CompiledSpecie) Ecosystem {
 
 	for x := range config.Width {
 		for y := range config.Height {
-			eco.World[x][y] = EmptyCell
+			eco.world[eco.index(x, y)] = EmptyCell
 		}
 	}
 
@@ -69,7 +75,7 @@ func NewEcosystem(config Config, species []*specie.CompiledSpecie) Ecosystem {
 		for x := xStart; x < xEnd; x++ {
 			for y := yStart; y < yEnd; y++ {
 				if rng.Rand.Intn(100) < config.Region.Density {
-					eco.World[x][y] = specie.Id
+					eco.world[eco.index(x, y)] = specie.Id
 				}
 			}
 		}
@@ -78,13 +84,10 @@ func NewEcosystem(config Config, species []*specie.CompiledSpecie) Ecosystem {
 	return eco
 }
 
-func newEmptyWorld(width, height int) [][]int {
-	var world = make([][]int, width)
-	for x := range world {
-		world[x] = make([]int, height)
-		for y := range world[x] {
-			world[x][y] = EmptyCell
-		}
+func newEmptyWorld(width, height int) []int {
+	var world = make([]int, width*height)
+	for i := range world {
+		world[i] = EmptyCell
 	}
 	return world
 }
@@ -111,34 +114,28 @@ var neighborhood = [8][2]int{
 }
 
 func (e *Ecosystem) Step() {
-	var next Ecosystem
-	next.World = newEmptyWorld(e.config.Width, e.config.Height)
-	specieNeighbors := make([]int, len(e.Species))
+	minSpecieNeighbors := min(len(e.Species), len(neighborhood))
+	specieNeighbors := make([]int, minSpecieNeighbors)
+	candidates := make([]int, minSpecieNeighbors)
 
 	for x := range e.config.Width {
 		for y := range e.config.Height {
-			for id := range specieNeighbors {
-				specieNeighbors[id] = 0
+			for i := range specieNeighbors {
+				specieNeighbors[i] = 0
 			}
 
 			var totalNeighbors int
 			for _, offset := range neighborhood {
 				neighborX := (x + offset[0] + e.config.Width) % e.config.Width
 				neighborY := (y + offset[1] + e.config.Height) % e.config.Height
-				neighborSpecieId := e.World[neighborX][neighborY]
+				neighborSpecieId := e.world[e.index(neighborX, neighborY)]
 				if neighborSpecieId != EmptyCell {
 					specieNeighbors[neighborSpecieId]++
 					totalNeighbors++
 				}
 			}
 
-			type candidate struct {
-				specieId int
-				weight   int
-			}
-			var candidates []candidate
-
-			cellId := e.World[x][y]
+			cellId := e.world[e.index(x, y)]
 
 			var cell *specie.CompiledSpecie
 			cellIsAlive := false
@@ -150,32 +147,31 @@ func (e *Ecosystem) Step() {
 				cellWillLive = cell.Rule.SurviveSet[totalNeighbors]
 			}
 
-			// cellWillDie := cellIsAlive && !cellShouldSurvive
-			// cellWillLive := cellIsAlive && cellShouldSurvive
+			candidates = candidates[:0]
 
-			for _, specie := range e.Species {
-				differentSpecie := specie.Id != cellId
-				neighborsOfSpecie := specieNeighbors[specie.Id]
+			for specieId, neighborsOfSpecie := range specieNeighbors {
+				specie := e.Species[specieId]
 				shouldBirth := specie.Rule.BirthSet[neighborsOfSpecie]
+				differentSpecie := specieId != cellId
 
 				canCompete := shouldBirth &&
-					((cellIsAlive && differentSpecie && shouldBirth) ||
+					((cellIsAlive && differentSpecie) ||
 						(!cellIsAlive))
 
 				if canCompete {
-					weight := neighborsOfSpecie * 100 / (totalNeighbors + 1)
-					candidates = append(candidates, candidate{specie.Id, weight})
+					candidates = append(candidates, specieId)
 				}
 			}
 
 			winnerId := EmptyCell
 			maxWeight := 0
 
-			for _, candidate := range candidates {
-				if candidate.weight > maxWeight {
-					maxWeight = candidate.weight
-					winnerId = candidate.specieId
-				} else if candidate.weight == maxWeight {
+			for _, candidateId := range candidates {
+				neighbors := specieNeighbors[candidateId]
+				if neighbors > maxWeight {
+					maxWeight = neighbors
+					winnerId = candidateId
+				} else if neighbors == maxWeight {
 					winnerId = EmptyCell
 				}
 			}
@@ -183,9 +179,13 @@ func (e *Ecosystem) Step() {
 			if winnerId == EmptyCell && cellWillLive {
 				winnerId = cellId
 			}
-			next.World[x][y] = winnerId
+			e.nextWorld[e.index(x, y)] = winnerId
 		}
 	}
 
-	e.World = next.World
+	e.world, e.nextWorld = e.nextWorld, e.world
+}
+
+func (e *Ecosystem) index(x, y int) int {
+	return y*e.config.Width + x
 }
