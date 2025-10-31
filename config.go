@@ -2,12 +2,13 @@ package main
 
 import (
 	"image/color"
-	"main/ecosystem"
-	"main/gfx/font"
-	"main/renderer"
-	"main/rng"
-	"main/specie"
-	"main/ui"
+
+	"github.com/notwithering/multilife/ecosystem"
+	"github.com/notwithering/multilife/gfx/font"
+	"github.com/notwithering/multilife/renderer"
+	"github.com/notwithering/multilife/rng"
+	"github.com/notwithering/multilife/specie"
+	"github.com/notwithering/multilife/ui"
 )
 
 func newConfig() config {

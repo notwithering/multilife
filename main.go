@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
-	"main/ecosystem"
-	"main/gfx"
-	"main/renderer"
-	"main/rng"
-	"main/specie"
-	"main/ui"
 	"strconv"
 	"time"
+
+	"github.com/notwithering/multilife/ecosystem"
+	"github.com/notwithering/multilife/gfx"
+	"github.com/notwithering/multilife/renderer"
+	"github.com/notwithering/multilife/rng"
+	"github.com/notwithering/multilife/specie"
+	"github.com/notwithering/multilife/ui"
 
 	"github.com/notwithering/sgr"
 )

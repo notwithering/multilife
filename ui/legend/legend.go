@@ -1,8 +1,8 @@
 package legend
 
 import (
-	"main/gfx"
-	"main/specie"
+	"github.com/notwithering/multilife/gfx"
+	"github.com/notwithering/multilife/specie"
 )
 
 type Legend struct {

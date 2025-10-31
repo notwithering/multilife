@@ -1,9 +1,9 @@
 package ui
 
 import (
-	"main/gfx"
-	"main/specie"
-	"main/ui/legend"
+	"github.com/notwithering/multilife/gfx"
+	"github.com/notwithering/multilife/specie"
+	"github.com/notwithering/multilife/ui/legend"
 )
 
 type UI struct {

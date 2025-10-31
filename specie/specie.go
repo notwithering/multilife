@@ -2,8 +2,9 @@ package specie
 
 import (
 	"image/color"
-	"main/rng"
-	"main/rule"
+
+	"github.com/notwithering/multilife/rng"
+	"github.com/notwithering/multilife/rule"
 )
 
 type SpecieConfig struct {

@@ -3,8 +3,9 @@ package renderer
 import (
 	"fmt"
 	"io"
-	"main/gfx"
 	"os/exec"
+
+	"github.com/notwithering/multilife/gfx"
 )
 
 type renderer struct {

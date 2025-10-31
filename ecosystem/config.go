@@ -2,7 +2,8 @@ package ecosystem
 
 import (
 	"image/color"
-	"main/specie"
+
+	"github.com/notwithering/multilife/specie"
 )
 
 type Config struct {

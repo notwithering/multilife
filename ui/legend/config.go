@@ -2,7 +2,8 @@ package legend
 
 import (
 	"image/color"
-	"main/gfx/font"
+
+	"github.com/notwithering/multilife/gfx/font"
 )
 
 type Config struct {

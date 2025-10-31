@@ -2,7 +2,8 @@ package gfx
 
 import (
 	"image/color"
-	"main/gfx/font"
+
+	"github.com/notwithering/multilife/gfx/font"
 )
 
 func (b *Buffer) pixelIndex(x, y int) int {

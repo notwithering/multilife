@@ -1,13 +1,14 @@
 package ecosystem
 
 import (
-	"main/gfx"
-	"main/rng"
-	"main/specie"
 	"math"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/notwithering/multilife/gfx"
+	"github.com/notwithering/multilife/rng"
+	"github.com/notwithering/multilife/specie"
 )
 
 const (
