@@ -1,4 +1,4 @@
-module main
+module github.com/notwithering/multilife
 
 go 1.25.3
 
