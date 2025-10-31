@@ -37,6 +37,7 @@ func newConfig() config {
 	config.Renderer.Video.SourceHeight = config.Ecosystem.Height
 	config.Renderer.Video.OutputWidth = 1920
 	config.Renderer.Video.OutputHeight = 1080
+	config.Renderer.Video.OutputFile = "output.mp4"
 
 	config.UI.Legend.Enabled = true
 	config.UI.Legend.X = 1

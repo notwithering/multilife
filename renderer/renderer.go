@@ -27,7 +27,7 @@ func NewRenderer(config Config) *renderer {
 		"-pix_fmt", "yuv420p",
 		"-preset", "slow",
 
-		"output.mp4",
+		config.Video.OutputFile,
 	)
 	r.cmd = cmd
 
