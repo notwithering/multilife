@@ -10,9 +10,17 @@ https://www.youtube.com/watch?v=zpPAf_UoUCc
 
 <img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/a8d23037-b348-4a47-be6e-d5472f48d846" />
 
+## license
+
+the programs code is licensed under the [MIT license](LICENSE)
+
+all videos created using this software are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+
 ## credits
 
 - Michaelangel007's [nanofont3x4](https://github.com/Michaelangel007/nanofont3x4)
+- FFmpeg for video encoding
+- cellular automaton rules from various authors found from [conwaylife.com](https://conwaylife.com/wiki/List_of_Life-like_rules) and [hatsyas catagolue](https://catagolue.hatsya.com/rules/lifelike)
 
 ## technical overview of engine
 
