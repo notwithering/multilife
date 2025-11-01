@@ -24,9 +24,12 @@ all videos created using this software are licensed under [CC BY 4.0](https://cr
 
 ## technical overview of engine
 
-- each cell can belong to a species each with its own `B/S` rule
+specie = singular for species
+species = plural for species
+
+- each cell can belong to a specie each with its own `B/S` rule
 - the world is a wrapped torodial grid
-- at every step, the engine computes the next state
+- at every step, the engine computes the next state in parallel with multiple workers
 
 ### neighbor counting
 
@@ -37,14 +40,20 @@ for each cell:
 
 ### survival
 
-if the current cell is alive, it checks its own species survival condition with its total neighbors of any specie, if the rule fails, the cell dies or could be later replaced by a birth of a different specie
+if the current cell is alive:
+
+- check its own specie survival condition using `totalNeighbors`
+- if it fails, the cell dies and can later be replaced by a birth of a different specie
 
 ### birth / takeover
 
-each specie independently checks if it can birth at this location using its own neighbor count (`specieNeighbors[specie.Id]`). a specie is considered a candidate for birth if the current cell meets the birth condition AND:
+each specie independently checks if it can birth at the current cells location using its own neighbor count from `specieNeighbors[specie.Id]`
 
-- the current cell is alive, and the aggressing specie is not the same as the current cells specie, or
-- the current cell is dead
+a specie is added as a candidate for birth if the current cell meets its birth condition AND:
+
+- the cell is alive but the specie is different from the current cells specie OR
+- the cell is dead
+
 
 ```go
 canCompete := shouldBirth &&
@@ -52,17 +61,18 @@ canCompete := shouldBirth &&
 		(!cellIsAlive))
 ````
 
-species can attack other species cells, so survival doesnt make a cell invincible
+since species can replace other species cells, survival doesnt make a cell invincible
 
 ### handling conflicts
 
-each candidate has a weight equal to the total number of neighbors of its own specie, the candidate with the most number of neighbors wins. if two or more share the highest weight, nothing happens and the current cell remains in its current state
+- each candidates weight = number of neighbors of its own specie (`specieNeighbors[candidateId]`)
+- the candidate with the highest weight wins
+- if multiple candidates tie for the highest weight, there is no change to the cell
 
 ### summary
 
-- each cell checks all species neighbor counts
-- each specie can birth into a cell if its birth rule is met
-- the current cell can survive if its survival rule is met
-- if multiple species can birth at the cell, the one with the highest local neighbor density (`ownSpecieNeighbors/(totalNeighbors + 1)`)
-- if theres a tie, the cell is left untouched
-- species can freely replace others cells
+- each cell counts neighbors per specie and total neighbors
+- a cell can survive according to its species survival rule
+- species can attempt to birth into empty cells or replace other species
+- multiple candidates resolve with neighbor-weight; ties keep the cell unchanged
+- the simulation supports multi-threading for faster computation
