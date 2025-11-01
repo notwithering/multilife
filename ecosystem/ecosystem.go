@@ -124,7 +124,6 @@ var neighborhood = [8][2]int{
 }
 
 func (e *Ecosystem) Step(collectStats bool) {
-	minSpecieNeighbors := min(len(e.Species), len(neighborhood))
 	numWorkers := max(runtime.NumCPU(), e.config.Height)
 	rowsPerWorker := e.config.Height / numWorkers
 
@@ -146,8 +145,8 @@ func (e *Ecosystem) Step(collectStats bool) {
 
 		go func() {
 			defer wg.Done()
-			specieNeighbors := make([]specie.SpecieId, minSpecieNeighbors)
-			candidates := make([]specie.SpecieId, minSpecieNeighbors)
+			specieNeighbors := make([]specie.SpecieId, len(e.Species))
+			candidates := make([]specie.SpecieId, len(e.Species))
 
 			for y := startY; y < endY; y++ {
 				for x := range e.config.Width {
