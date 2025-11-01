@@ -6,7 +6,7 @@ run the program and it outputs `output.mp4` file with the video replay of the si
 
 https://www.youtube.com/watch?v=zpPAf_UoUCc
 
-<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/0376cb50-4bb9-4c63-8097-e272e1ef234e" />
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/ce6326d4-7f90-43ca-bd3a-73dedacb3753" />
 
 <img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/a8d23037-b348-4a47-be6e-d5472f48d846" />
 

@@ -60,7 +60,7 @@ func newConfig() config {
 
 	// rng
 
-	config.RNG.Seed = 1
+	config.RNG.Seed = 0
 
 	// stats
 
