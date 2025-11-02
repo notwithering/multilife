@@ -13,6 +13,10 @@ import (
 )
 
 func main() {
+	// cpuFile, _ := os.Create("cpu.prof")
+	// defer pprof.StopCPUProfile()
+	// pprof.StartCPUProfile(cpuFile)
+
 	config := newConfig()
 	rng.InitRNG(config.RNG)
 

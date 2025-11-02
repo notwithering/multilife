@@ -4,7 +4,6 @@ import (
 	"math"
 	"runtime"
 	"sync"
-	"time"
 
 	"github.com/notwithering/multilife/gfx"
 	"github.com/notwithering/multilife/rng"
@@ -16,17 +15,18 @@ const (
 )
 
 type Ecosystem struct {
-	config    Config
-	Species   []*specie.CompiledSpecie
-	world     []specie.SpecieId
-	nextWorld []specie.SpecieId
-	Stats     Stats
+	config         Config
+	Species        []*specie.CompiledSpecie
+	world          []specie.SpecieId
+	nextWorld      []specie.SpecieId
+	Stats          Stats
+	zeroCanSurvive bool
+	zeroCanBirth   bool
 }
 
 type Stats struct {
 	TotalPopulation    int
 	PopulationBySpecie []int
-	FrameTime          time.Duration
 }
 
 func (e *Ecosystem) Render(buf *gfx.Buffer) {
@@ -89,6 +89,13 @@ func NewEcosystem(config Config, species []*specie.CompiledSpecie) Ecosystem {
 				}
 			}
 		}
+
+		if specie.Rule.SurviveSet[0] {
+			eco.zeroCanSurvive = true
+		}
+		if specie.Rule.BirthSet[0] {
+			eco.zeroCanBirth = true
+		}
 	}
 
 	return eco
@@ -127,15 +134,9 @@ func (e *Ecosystem) Step(collectStats bool) {
 	numWorkers := max(runtime.NumCPU(), e.config.Height)
 	rowsPerWorker := e.config.Height / numWorkers
 
-	startTime := time.Now()
 	if collectStats {
 		e.Stats.TotalPopulation = 0
 		e.Stats.PopulationBySpecie = make([]int, len(e.Species))
-	}
-
-	workerPopulations := make([][]int, numWorkers)
-	for worker := range numWorkers {
-		workerPopulations[worker] = make([]int, len(e.Species))
 	}
 
 	var wg sync.WaitGroup
@@ -150,74 +151,11 @@ func (e *Ecosystem) Step(collectStats bool) {
 
 		go func() {
 			defer wg.Done()
-			specieNeighbors := make([]int, len(e.Species))
-			candidates := make([]specie.SpecieId, len(e.Species))
-
-			for y := startY; y < endY; y++ {
-				for x := range e.config.Width {
-					clear(specieNeighbors)
-
-					var totalNeighbors int
-					for _, offset := range neighborhood {
-						neighborX := (x + offset[0] + e.config.Width) % e.config.Width
-						neighborY := (y + offset[1] + e.config.Height) % e.config.Height
-						neighborSpecieId := e.world[e.index(neighborX, neighborY)]
-						if neighborSpecieId != EmptyCell {
-							specieNeighbors[neighborSpecieId]++
-							totalNeighbors++
-						}
-					}
-
-					cellId := e.world[e.index(x, y)]
-
-					var cell *specie.CompiledSpecie
-					cellIsAlive := false
-					cellWillLive := false
-
-					if cellId != EmptyCell {
-						cell = e.Species[cellId]
-						cellIsAlive = true
-						cellWillLive = cell.Rule.SurviveSet[totalNeighbors]
-
-						if collectStats {
-							workerPopulations[worker][cellId]++
-						}
-					}
-
-					clear(candidates)
-
-					for specieIdInt, neighborsOfSpecie := range specieNeighbors {
-						specieId := specie.SpecieId(specieIdInt)
-						specie := e.Species[specieId]
-						shouldBirth := specie.Rule.BirthSet[neighborsOfSpecie]
-						differentSpecie := specieId != cellId
-
-						canCompete := shouldBirth &&
-							((cellIsAlive && differentSpecie) ||
-								(!cellIsAlive))
-
-						if canCompete {
-							candidates = append(candidates, specieId)
-						}
-					}
-
-					winnerId := EmptyCell
-					maxWeight := -1
-
-					for _, candidateId := range candidates {
-						neighbors := specieNeighbors[candidateId]
-						if neighbors > maxWeight {
-							maxWeight = neighbors
-							winnerId = candidateId
-						} else if neighbors == maxWeight {
-							winnerId = EmptyCell
-						}
-					}
-
-					if winnerId == EmptyCell && cellWillLive {
-						winnerId = cellId
-					}
-					e.nextWorld[e.index(x, y)] = winnerId
+			workerPopulation := e.stepRange(startY, endY, collectStats)
+			if collectStats {
+				for cellId, count := range workerPopulation {
+					e.Stats.TotalPopulation += count
+					e.Stats.PopulationBySpecie[cellId] += count
 				}
 			}
 		}()
@@ -225,19 +163,99 @@ func (e *Ecosystem) Step(collectStats bool) {
 
 	wg.Wait()
 	e.world, e.nextWorld = e.nextWorld, e.world
+}
 
-	if collectStats {
-		e.Stats.FrameTime = time.Since(startTime)
+func (e *Ecosystem) stepRange(startY, endY int, collectStats bool) (workerPopulation []int) {
+	specieNeighbors := make([]int, len(e.Species))
+	candidates := make([]specie.SpecieId, len(e.Species))
 
-		for _, workerPopulation := range workerPopulations {
-			for cellId, count := range workerPopulation {
-				e.Stats.TotalPopulation += count
-				e.Stats.PopulationBySpecie[cellId] += count
+	workerPopulation = make([]int, len(e.Species))
+
+	for y := startY; y < endY; y++ {
+		for x := range e.config.Width {
+			clear(specieNeighbors)
+
+			var totalNeighbors int
+			for _, offset := range neighborhood {
+				neighborX := (x + offset[0] + e.config.Width) % e.config.Width
+				neighborY := (y + offset[1] + e.config.Height) % e.config.Height
+				neighborSpecieId := e.world[e.index(neighborX, neighborY)]
+				if neighborSpecieId != EmptyCell {
+					specieNeighbors[neighborSpecieId]++
+					totalNeighbors++
+				}
 			}
+
+			cellId := e.world[e.index(x, y)]
+
+			var cell *specie.CompiledSpecie
+			cellIsAlive := false
+			cellWillLive := false
+
+			if cellId != EmptyCell {
+				cell = e.Species[cellId]
+				cellIsAlive = true
+				cellWillLive = cell.Rule.SurviveSet[totalNeighbors]
+
+				if collectStats {
+					workerPopulation[cellId]++
+				}
+			}
+
+			clear(candidates)
+
+			for specieIdInt, neighborsOfSpecie := range specieNeighbors {
+				if !e.zeroCanBirth && neighborsOfSpecie == 0 {
+					continue
+				}
+
+				specieId := specie.SpecieId(specieIdInt)
+				specie := e.Species[specieId]
+				shouldBirth := specie.Rule.BirthSet[neighborsOfSpecie]
+				differentSpecie := specieId != cellId
+
+				canCompete := shouldBirth &&
+					((cellIsAlive && differentSpecie) ||
+						(!cellIsAlive))
+
+				if canCompete {
+					candidates = append(candidates, specieId)
+				}
+			}
+
+			winnerId := EmptyCell
+			maxWeight := -1
+
+			for _, candidateId := range candidates {
+				neighbors := specieNeighbors[candidateId]
+				if neighbors > maxWeight {
+					maxWeight = neighbors
+					winnerId = candidateId
+				} else if neighbors == maxWeight {
+					winnerId = EmptyCell
+				}
+			}
+
+			if winnerId == EmptyCell && cellWillLive {
+				winnerId = cellId
+			}
+			e.nextWorld[e.index(x, y)] = winnerId
 		}
 	}
+
+	return workerPopulation
 }
 
 func (e *Ecosystem) index(x, y int) int {
 	return y*e.config.Width + x
+}
+
+func wrap(n, max int) int {
+	for n < 0 {
+		n += max
+	}
+	for n >= max {
+		n -= max
+	}
+	return n
 }
