@@ -249,13 +249,3 @@ func (e *Ecosystem) stepRange(startY, endY int, collectStats bool) (workerPopula
 func (e *Ecosystem) index(x, y int) int {
 	return y*e.config.Width + x
 }
-
-func wrap(n, max int) int {
-	for n < 0 {
-		n += max
-	}
-	for n >= max {
-		n -= max
-	}
-	return n
-}
