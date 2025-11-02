@@ -133,6 +133,11 @@ func (e *Ecosystem) Step(collectStats bool) {
 		e.Stats.PopulationBySpecie = make([]int, len(e.Species))
 	}
 
+	workerPopulations := make([][]int, numWorkers)
+	for worker := range numWorkers {
+		workerPopulations[worker] = make([]int, len(e.Species))
+	}
+
 	var wg sync.WaitGroup
 	wg.Add(numWorkers)
 
@@ -145,7 +150,7 @@ func (e *Ecosystem) Step(collectStats bool) {
 
 		go func() {
 			defer wg.Done()
-			specieNeighbors := make([]specie.SpecieId, len(e.Species))
+			specieNeighbors := make([]int, len(e.Species))
 			candidates := make([]specie.SpecieId, len(e.Species))
 
 			for y := startY; y < endY; y++ {
@@ -175,12 +180,11 @@ func (e *Ecosystem) Step(collectStats bool) {
 						cellWillLive = cell.Rule.SurviveSet[totalNeighbors]
 
 						if collectStats {
-							e.Stats.TotalPopulation++
-							e.Stats.PopulationBySpecie[cellId]++
+							workerPopulations[worker][cellId]++
 						}
 					}
 
-					candidates = candidates[:0]
+					clear(candidates)
 
 					for specieIdInt, neighborsOfSpecie := range specieNeighbors {
 						specieId := specie.SpecieId(specieIdInt)
@@ -198,7 +202,7 @@ func (e *Ecosystem) Step(collectStats bool) {
 					}
 
 					winnerId := EmptyCell
-					var maxWeight specie.SpecieId
+					maxWeight := -1
 
 					for _, candidateId := range candidates {
 						neighbors := specieNeighbors[candidateId]
@@ -224,6 +228,13 @@ func (e *Ecosystem) Step(collectStats bool) {
 
 	if collectStats {
 		e.Stats.FrameTime = time.Since(startTime)
+
+		for _, workerPopulation := range workerPopulations {
+			for cellId, count := range workerPopulation {
+				e.Stats.TotalPopulation += count
+				e.Stats.PopulationBySpecie[cellId] += count
+			}
+		}
 	}
 }
 
