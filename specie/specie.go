@@ -20,6 +20,10 @@ type CompiledSpecie struct {
 	Color color.Color
 }
 
+const (
+	NoSpecie SpecieId = 255
+)
+
 var currentId SpecieId
 
 func (c SpecieConfig) Compile(numberOfSpecies int) *CompiledSpecie {
