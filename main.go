@@ -52,11 +52,12 @@ func main() {
 
 		statsPrinter.StartedStep()
 		eco.Step(statsPrinter.ShouldEcosystem())
+		statsPrinter.UpdateEcosystemStats(eco.Stats)
 		statsPrinter.EndedStep()
 
 		statsPrinter.EndedFrame()
 
-		statsPrinter.Print(eco.Stats)
+		statsPrinter.Print()
 	}
 	statsPrinter.EndedLoop()
 

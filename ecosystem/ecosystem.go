@@ -16,8 +16,6 @@ type Ecosystem struct {
 	world           []specie.SpecieId
 	nextWorld       []specie.SpecieId
 	Stats           Stats
-	zeroCanSurvive  bool
-	zeroCanBirth    bool
 	neighborIndices [][8]int
 }
 
@@ -102,13 +100,6 @@ func NewEcosystem(config Config, species []*specie.CompiledSpecie) Ecosystem {
 				}
 			}
 		}
-
-		if specie.Rule.SurviveSet[0] {
-			eco.zeroCanSurvive = true
-		}
-		if specie.Rule.BirthSet[0] {
-			eco.zeroCanBirth = true
-		}
 	}
 
 	return eco
@@ -180,7 +171,6 @@ func (e *Ecosystem) stepRange(startY, endY int, collectStats bool) (workerPopula
 	species := e.Species
 	workerPopulation = make([]int, speciesCount)
 	candidates := make([]specie.SpecieId, 0, speciesCount)
-	zeroCanBirth := e.zeroCanBirth
 
 	for y := startY; y < endY; y++ {
 		for x := range width {
@@ -189,17 +179,6 @@ func (e *Ecosystem) stepRange(startY, endY int, collectStats bool) (workerPopula
 			cellIndex := e.index(x, y)
 
 			var totalNeighbors int
-
-			// for _, offset := range neighborhood {
-			// 	neighborX := (x + offset[0] + e.config.Width) % e.config.Width
-			// 	neighborY := (y + offset[1] + e.config.Height) % e.config.Height
-			// 	neighborIndex := e.index(neighborX, neighborY)
-			// 	neighborSpecieId := e.world[neighborIndex]
-			// 	if neighborSpecieId != specie.NoSpecie {
-			// 		specieNeighbors[neighborSpecieId]++
-			// 		totalNeighbors++
-			// 	}
-			// }
 
 			for _, index := range neighborIndices[cellIndex] {
 				neighborSpecieId := e.world[index]
@@ -225,16 +204,9 @@ func (e *Ecosystem) stepRange(startY, endY int, collectStats bool) (workerPopula
 				}
 			}
 
-			// for i := range candidates {
-			// 	candidates[i] = specie.NoSpecie
-			// }
 			candidates = candidates[:0]
 
 			for specieIdInt, neighborsOfSpecie := range specieNeighbors {
-				if zeroCanBirth && neighborsOfSpecie == 0 {
-					continue
-				}
-
 				specieId := specie.SpecieId(specieIdInt)
 				specie := species[specieId]
 				shouldBirth := specie.Rule.BirthSet[neighborsOfSpecie]
