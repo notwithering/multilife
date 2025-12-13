@@ -1,7 +1,8 @@
 package stats
 
 type Config struct {
-	Basic struct {
+	Infinite bool
+	Basic    struct {
 		Enabled     bool
 		Interval    int
 		TotalFrames int

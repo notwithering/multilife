@@ -2,8 +2,7 @@ package renderer
 
 type Config struct {
 	Video struct {
-		FPS    int
-		Length int
+		FPS int
 
 		SourceWidth  int
 		SourceHeight int

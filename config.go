@@ -28,9 +28,9 @@ func newConfig() config {
 		specie.SpecieBacteria,
 	}
 
-	sizeDivider := 4
-	config.Ecosystem.Width = 1920 / sizeDivider
-	config.Ecosystem.Height = 1080 / sizeDivider
+	sizeDivisor := 4
+	config.Ecosystem.Width = 1920 / sizeDivisor
+	config.Ecosystem.Height = 1080 / sizeDivisor
 
 	config.Ecosystem.Render.BackgroundColor = color.Black
 
@@ -40,13 +40,17 @@ func newConfig() config {
 	// renderer
 
 	config.Renderer.Video.FPS = 60
-	videoLengthInSeconds := 30 //seconds
-	config.Renderer.Video.Length = config.Renderer.Video.FPS * videoLengthInSeconds
 	config.Renderer.Video.SourceWidth = config.Ecosystem.Width
 	config.Renderer.Video.SourceHeight = config.Ecosystem.Height
 	config.Renderer.Video.OutputWidth = 1920
 	config.Renderer.Video.OutputHeight = 1080
 	config.Renderer.Video.OutputFile = "output.mp4"
+
+	// main
+
+	config.Main.Infinite = false
+	videoLengthInSeconds := 30 //seconds
+	config.Main.VideoLength = config.Renderer.Video.FPS * videoLengthInSeconds
 
 	// legend
 
@@ -64,13 +68,15 @@ func newConfig() config {
 
 	// stats
 
+	config.Stats.Infinite = config.Main.Infinite
+
 	config.Stats.Basic.Enabled = true
 	config.Stats.Basic.Interval = 30
 
 	config.Stats.Ecosystem.Enabled = true
 	config.Stats.Ecosystem.Interval = 50
 
-	config.Stats.Basic.TotalFrames = config.Renderer.Video.Length
+	config.Stats.Basic.TotalFrames = config.Main.VideoLength
 
 	return config
 }
@@ -78,7 +84,13 @@ func newConfig() config {
 type config struct {
 	Ecosystem ecosystem.Config
 	Renderer  renderer.Config
+	Main      MainConfig
 	UI        ui.Config
 	RNG       rng.Config
 	Stats     stats.Config
+}
+
+type MainConfig struct {
+	VideoLength int
+	Infinite    bool
 }

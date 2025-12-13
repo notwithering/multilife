@@ -51,7 +51,10 @@ func (s *StatsPrinter) Print() {
 
 	if s.config.Ecosystem.Enabled {
 		text += s.ecosystemStatsText()
+		text += "----------\n"
 	}
+
+	text += "Ctrl+C to finish.\n"
 
 	if s.config.Basic.Enabled || s.config.Ecosystem.Enabled {
 		fmt.Print("\x1b[H\x1b[J" + text)

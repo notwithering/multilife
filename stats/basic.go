@@ -15,8 +15,12 @@ func (s *StatsPrinter) basicStatsText() string {
 
 	// Frame: 757/1800 (42.1%)
 	text += "Frame: "
-	text += strconv.Itoa(s.currentFrame+1) + "/" + strconv.Itoa(s.config.Basic.TotalFrames)
-	text += " (" + fmt.Sprintf("%.1f", float32(s.currentFrame+1)/float32(s.config.Basic.TotalFrames)*100) + "%)"
+	if !s.config.Infinite {
+		text += strconv.Itoa(s.currentFrame+1) + "/" + strconv.Itoa(s.config.Basic.TotalFrames)
+		text += " (" + fmt.Sprintf("%.1f", float32(s.currentFrame+1)/float32(s.config.Basic.TotalFrames)*100) + "%)"
+	} else {
+		text += strconv.Itoa(s.currentFrame + 1)
+	}
 	text += "\n"
 
 	// Render: 2.2398ms (500/s)
@@ -54,15 +58,17 @@ func (s *StatsPrinter) basicStatsText() string {
 	text += "\n"
 
 	// Estimated: 0m50s324ms
-	text += "Estimated: "
-	progress := float64(s.currentFrame) / float64(s.config.Basic.TotalFrames)
-	if progress == 0 {
-		text += "N/A"
-	} else {
-		estimatedTimeLeft := float64(elapsedTime.Seconds())/progress - float64(elapsedTime.Seconds())
-		text += durationToString(time.Duration(estimatedTimeLeft * float64(time.Second)))
+	if !s.config.Infinite {
+		text += "Estimated: "
+		progress := float64(s.currentFrame) / float64(s.config.Basic.TotalFrames)
+		if progress == 0 {
+			text += "N/A"
+		} else {
+			estimatedTimeLeft := float64(elapsedTime.Seconds())/progress - float64(elapsedTime.Seconds())
+			text += durationToString(time.Duration(estimatedTimeLeft * float64(time.Second)))
+		}
+		text += "\n"
 	}
-	text += "\n"
 
 	return text
 }

@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/notwithering/multilife/ecosystem"
 	"github.com/notwithering/multilife/gfx"
@@ -34,8 +37,18 @@ func main() {
 		return
 	}
 
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+
 	statsPrinter.StartedLoop()
-	for range config.Renderer.Video.Length {
+loop:
+	for i := 0; config.Main.Infinite || i < config.Main.VideoLength; i++ {
+		select {
+		case <-sig:
+			break loop
+		default:
+		}
+
 		statsPrinter.StartedFrame()
 
 		statsPrinter.StartedRender()
