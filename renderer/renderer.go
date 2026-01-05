@@ -24,10 +24,10 @@ func NewRenderer(config Config) *renderer {
 		"-framerate", fmt.Sprintf("%d", config.Video.FPS),
 		"-i", "-",
 		"-vf", fmt.Sprintf("scale=%d:%d:flags=neighbor", config.Video.OutputWidth, config.Video.OutputHeight),
-		"-c:v", "libx264",
-		"-pix_fmt", "yuv420p",
+		"-c:v", "ffv1",
+		"-crf", "0",
 		"-preset", "slow",
-
+		"-pix_fmt", "yuv444p",
 		config.Video.OutputFile,
 	)
 	r.cmd = cmd
