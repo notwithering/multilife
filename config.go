@@ -48,7 +48,7 @@ func newConfig() config {
 
 	// main
 
-	config.Main.Infinite = false
+	config.Main.Infinite = true
 	videoLengthInSeconds := 30 //seconds
 	config.Main.VideoLength = config.Renderer.Video.FPS * videoLengthInSeconds
 
