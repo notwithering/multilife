@@ -2,6 +2,7 @@ package stats
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/notwithering/multilife/ecosystem"
@@ -39,6 +40,10 @@ func NewStatsPrinter(config Config, species []*specie.CompiledSpecie) *StatsPrin
 }
 
 func (s *StatsPrinter) Print() {
+	if !s.config.Basic.Enabled && !s.config.Ecosystem.Enabled {
+		return
+	}
+
 	var text string
 
 	if s.config.Basic.Enabled {
@@ -55,10 +60,7 @@ func (s *StatsPrinter) Print() {
 	}
 
 	text += "Ctrl+C to finish.\n"
-
-	if s.config.Basic.Enabled || s.config.Ecosystem.Enabled {
-		fmt.Print("\x1b[H\x1b[J" + text)
-	}
+	fmt.Fprint(os.Stderr, "\x1b[H\x1b[J"+text)
 }
 
 func (s *StatsPrinter) PrintClosure() {
