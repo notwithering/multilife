@@ -4,19 +4,19 @@ import (
 	"image/color"
 )
 
-func lerp(a, b uint8, t float64) uint8 {
-	return uint8(float64(a) + t*(float64(b)-float64(a)))
+func lerp(a, b uint8, x float64) uint8 {
+	return uint8(float64(a) + x*(float64(b)-float64(a)))
 }
 
-func lerpColor(c0, c1 color.Color, t float64) color.Color {
+func lerpColor(c0, c1 color.Color, x float64) color.Color {
 	a := c0.(color.RGBA)
 	b := c1.(color.RGBA)
 
 	return color.RGBA{
-		R: lerp(a.R, b.R, t),
-		G: lerp(a.G, b.G, t),
-		B: lerp(a.B, b.B, t),
-		A: lerp(a.A, b.A, t),
+		R: lerp(a.R, b.R, x),
+		G: lerp(a.G, b.G, x),
+		B: lerp(a.B, b.B, x),
+		A: lerp(a.A, b.A, x),
 	}
 }
 
