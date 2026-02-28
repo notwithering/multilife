@@ -72,6 +72,7 @@ func newConfig() config {
 
 	config.Stats.Basic.Enabled = true
 	config.Stats.Basic.Interval = 30
+	config.Stats.Basic.FPS = config.Renderer.Video.FPS
 
 	config.Stats.Ecosystem.Enabled = true
 	config.Stats.Ecosystem.Interval = 50

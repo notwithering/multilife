@@ -6,6 +6,7 @@ type Config struct {
 		Enabled     bool
 		Interval    int
 		TotalFrames int
+		FPS         int
 	}
 	Ecosystem struct {
 		Enabled  bool

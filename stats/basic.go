@@ -62,10 +62,14 @@ func (s *StatsPrinter) basicStatsText(sb *strings.Builder) {
 	sb.WriteString("/s)")
 	sb.WriteByte('\n')
 
-	// Elapsed: 0m12s502ms
+	// Elapsed: 0m12s502ms (1m4s102ms)
 	sb.WriteString("Elapsed: ")
 	elapsedTime := time.Since(s.loopStart)
 	sb.WriteString(durationToString(elapsedTime))
+	sb.WriteString(" (")
+	outputTime := time.Duration(float64(s.currentFrame) / float64(s.config.Basic.FPS) * float64(time.Second))
+	sb.WriteString(durationToString(outputTime))
+	sb.WriteByte(')')
 	sb.WriteByte('\n')
 
 	// Estimated: 0m50s324ms
