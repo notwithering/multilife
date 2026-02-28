@@ -21,6 +21,7 @@ all videos created using this software are licensed under [CC BY 4.0](https://cr
 - Michaelangel007's [nanofont3x4](https://github.com/Michaelangel007/nanofont3x4)
 - FFmpeg for video encoding
 - cellular automaton rules from various authors found from [conwaylife.com](https://conwaylife.com/wiki/List_of_Life-like_rules) and [hatsyas catagolue](https://catagolue.hatsya.com/rules/lifelike)
+- josuah's [miniwi](https://github.com/josuah/miniwi)
 
 ## technical overview of engine
 

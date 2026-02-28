@@ -3,13 +3,18 @@ package font
 import "unicode"
 
 var Nanofont3x4 = &Font{
-	Width:             3,
-	Height:            4,
-	YOffset:           -1,
-	HorizontalSpacing: 1,
-	VerticalSpacing:   1,
-	Bitmap:            nanofont3x4Bitmap,
-	Get:               nanofont3x4Get,
+	Width:   3,
+	Height:  3,
+	YOffset: -1,
+
+	Ascent:  1,
+	Descent: 0,
+
+	HSpacing: 1,
+	VSpacing: 1,
+
+	Bitmap: nanofont3x4Bitmap,
+	Get:    nanofont3x4Get,
 }
 
 // https://github.com/Michaelangel007/nanofont3x4

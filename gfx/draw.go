@@ -43,11 +43,11 @@ func (b *Buffer) DrawChar(x, y int, col color.Color, font *font.Font, character 
 	g8b := uint8(g8 >> 8)
 	b8b := uint8(b8 >> 8)
 
-	for row := range glyph {
-		for colBit := range 3 {
-			if glyph[row]&(1<<(2-colBit)) != 0 {
+	for rowNum, row := range glyph {
+		for colBit := range font.Width {
+			if row&(1<<(2-colBit)) != 0 {
 				px := x + colBit
-				py := y + row + font.YOffset
+				py := y + rowNum + font.YOffset
 				if px < 0 || px >= b.Width || py < 0 || py >= b.Height {
 					continue
 				}
@@ -62,6 +62,6 @@ func (b *Buffer) DrawChar(x, y int, col color.Color, font *font.Font, character 
 
 func (b *Buffer) DrawString(x, y int, col color.Color, font *font.Font, str string) {
 	for i, ch := range str {
-		b.DrawChar(x+i*(font.Width+1), y, col, font, ch)
+		b.DrawChar(x+i*(font.Width+font.HSpacing), y, col, font, ch)
 	}
 }

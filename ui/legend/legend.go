@@ -26,16 +26,16 @@ func (l *Legend) Draw(buf *gfx.Buffer) {
 	}
 
 	fnt := l.config.Font
-	colorIndicatorSize := max(fnt.Height+fnt.YOffset, fnt.Width)
+	colorIndicatorSize := fnt.Height
 	rectWidth := l.config.Padding +
 		colorIndicatorSize +
-		fnt.HorizontalSpacing +
-		maxLen*(fnt.Width+fnt.HorizontalSpacing) - fnt.HorizontalSpacing +
+		fnt.HSpacing +
+		maxLen*(fnt.Width+fnt.HSpacing) - fnt.HSpacing +
 		l.config.Padding
 
 	numLines := len(l.species)
 	rectHeight := l.config.Padding +
-		numLines*(fnt.Height+fnt.YOffset+fnt.VerticalSpacing) - fnt.VerticalSpacing +
+		numLines*(fnt.Height+fnt.VSpacing) - fnt.VSpacing +
 		l.config.Padding
 
 	buf.DrawRect(l.config.X, l.config.Y,
@@ -49,9 +49,9 @@ func (l *Legend) Draw(buf *gfx.Buffer) {
 	for i, specie := range l.species {
 		colorIndicatorX := contentX
 		colorIndicatorY := contentY +
-			i*(colorIndicatorSize+fnt.VerticalSpacing)
+			i*(colorIndicatorSize+fnt.VSpacing)
 
-		textX := colorIndicatorX + colorIndicatorSize + fnt.HorizontalSpacing
+		textX := colorIndicatorX + colorIndicatorSize + fnt.HSpacing
 		textY := colorIndicatorY
 
 		buf.DrawRect(colorIndicatorX, colorIndicatorY, colorIndicatorSize, colorIndicatorSize, specie.Color)
