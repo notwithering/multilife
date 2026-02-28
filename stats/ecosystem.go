@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"strconv"
+	"strings"
 
 	"github.com/notwithering/multilife/ecosystem"
 	"github.com/notwithering/sgr"
@@ -17,11 +18,9 @@ func (s *StatsPrinter) UpdateEcosystemStats(stats ecosystem.Stats) {
 	s.ecosystemStats = stats
 }
 
-func (s *StatsPrinter) ecosystemStatsText() string {
-	var text string
-
-	// text += "warning: ecosystem stats can add up to 100us/frame (+1s/1,000,000 frames)"
-	// text += "\n"
+func (s *StatsPrinter) ecosystemStatsText(sb *strings.Builder) {
+	// sb.WriteString("warning: ecosystem stats can add up to 100us/frame (+1s/1,000,000 frames)")
+	// sb.WriteByte('\n')
 
 	var averageDensity float64
 	for _, population := range s.ecosystemStats.PopulationBySpecie {
@@ -41,18 +40,18 @@ func (s *StatsPrinter) ecosystemStatsText() string {
 		).(color.RGBA)
 
 		if density == 0 {
-			text += sgr.Strike
+			sb.WriteString(sgr.Strike)
 		}
 
-		text += fmt.Sprintf("%s%d;%d;%dm", sgr.FgColorRGB, c.R, c.G, c.B)
+		fmt.Fprintf(sb, "%s%d;%d;%dm", sgr.FgColorRGB, c.R, c.G, c.B)
 
 		// Conway's Life: 50423/99256 (50.8%)
-		text += specie.Name + ": "
-		text += strconv.Itoa(population) + "/" + strconv.Itoa(s.ecosystemStats.TotalPopulation)
-		text += " (" + fmt.Sprintf("%.1f", density*100) + "%)"
-		text += sgr.Reset
-		text += "\n"
+		sb.WriteString(specie.Name + ": ")
+		sb.WriteString(strconv.Itoa(population) + "/" + strconv.Itoa(s.ecosystemStats.TotalPopulation))
+		sb.WriteString(" (")
+		fmt.Fprintf(sb, "%.1f", density*100)
+		sb.WriteString("%)")
+		sb.WriteString(sgr.Reset)
+		sb.WriteByte('\n')
 	}
-
-	return text
 }

@@ -3,6 +3,7 @@ package stats
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -10,67 +11,75 @@ func (s *StatsPrinter) ShouldBasic() bool {
 	return s.config.Basic.Enabled && s.currentFrame%s.config.Basic.Interval == 0
 }
 
-func (s *StatsPrinter) basicStatsText() string {
-	var text string
-
+func (s *StatsPrinter) basicStatsText(sb *strings.Builder) {
 	// Frame: 757/1800 (42.1%)
-	text += "Frame: "
+	sb.WriteString("Frame: ")
 	if !s.config.Infinite {
-		text += strconv.Itoa(s.currentFrame+1) + "/" + strconv.Itoa(s.config.Basic.TotalFrames)
-		text += " (" + fmt.Sprintf("%.1f", float32(s.currentFrame+1)/float32(s.config.Basic.TotalFrames)*100) + "%)"
+		sb.WriteString(strconv.Itoa(s.currentFrame + 1))
+		sb.WriteByte('/')
+		sb.WriteString(strconv.Itoa(s.config.Basic.TotalFrames))
+		sb.WriteString(" (")
+		fmt.Fprintf(sb, "%.1f", float32(s.currentFrame+1)/float32(s.config.Basic.TotalFrames)*100)
+		sb.WriteString("%)")
 	} else {
-		text += strconv.Itoa(s.currentFrame + 1)
+		sb.WriteString(strconv.Itoa(s.currentFrame + 1))
 	}
-	text += "\n"
+	sb.WriteByte('\n')
 
 	// Render: 2.2398ms (500/s)
-	text += "Render: "
+	sb.WriteString("Render: ")
 	renderTime := s.renderEnd.Sub(s.renderStart)
-	text += renderTime.String()
-	text += " (" + fmt.Sprintf("%.2f", 1.0/renderTime.Seconds()) + "/s)"
-	text += "\n"
+	sb.WriteString(renderTime.String())
+	sb.WriteString(" (")
+	fmt.Fprintf(sb, "%.2f", 1.0/renderTime.Seconds())
+	sb.WriteString("/s)")
+	sb.WriteByte('\n')
 
 	// UI: 50us (30000/s)
-	text += "UI: "
+	sb.WriteString("UI: ")
 	uiTime := s.uiEnd.Sub(s.uiStart)
-	text += uiTime.String()
-	text += " (" + fmt.Sprintf("%.2f", 1.0/uiTime.Seconds()) + "/s)"
-	text += "\n"
+	sb.WriteString(uiTime.String())
+	sb.WriteString(" (")
+	fmt.Fprintf(sb, "%.2f", 1.0/uiTime.Seconds())
+	sb.WriteString("/s)")
+	sb.WriteByte('\n')
 
 	// Step: 30.2155342ms (120/s)
-	text += "Step: "
+	sb.WriteString("Step: ")
 	stepTime := s.stepEnd.Sub(s.stepStart)
-	text += stepTime.String()
-	text += " (" + fmt.Sprintf("%.2f", 1.0/stepTime.Seconds()) + "/s)"
-	text += "\n"
+	sb.WriteString(stepTime.String())
+	sb.WriteString(" (")
+	fmt.Fprintf(sb, "%.2f", 1.0/stepTime.Seconds())
+	sb.WriteString("/s)")
+	sb.WriteByte('\n')
 
 	// Frame: 50.2155342ms (20/s)
-	text += "Frame: "
+	sb.WriteString("Frame: ")
 	frameTime := s.frameEnd.Sub(s.frameStart)
-	text += frameTime.String()
-	text += " (" + fmt.Sprintf("%.2f", 1.0/frameTime.Seconds()) + "/s)"
-	text += "\n"
+	sb.WriteString(frameTime.String())
+	sb.WriteString(" (")
+	fmt.Fprintf(sb, "%.2f", 1.0/frameTime.Seconds())
+	sb.WriteString("/s)")
+	sb.WriteByte('\n')
 
 	// Elapsed: 0m12s502ms
-	text += "Elapsed: "
+	sb.WriteString("Elapsed: ")
 	elapsedTime := time.Since(s.loopStart)
-	text += durationToString(elapsedTime)
-	text += "\n"
+	sb.WriteString(durationToString(elapsedTime))
+	sb.WriteByte('\n')
 
 	// Estimated: 0m50s324ms
 	if !s.config.Infinite {
-		text += "Estimated: "
+		sb.WriteString("Estimated: ")
 		progress := float64(s.currentFrame) / float64(s.config.Basic.TotalFrames)
 		if progress == 0 {
-			text += "N/A"
+			sb.WriteString("N/A")
 		} else {
 			estimatedTimeLeft := float64(elapsedTime.Seconds())/progress - float64(elapsedTime.Seconds())
-			text += durationToString(time.Duration(estimatedTimeLeft * float64(time.Second)))
+			sb.WriteString(durationToString(time.Duration(estimatedTimeLeft * float64(time.Second))))
 		}
-		text += "\n"
+		sb.WriteByte('\n')
 	}
-
-	return text
 }
 
 func (s *StatsPrinter) StartedLoop() {
