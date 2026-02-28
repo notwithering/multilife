@@ -24,8 +24,7 @@ all videos created using this software are licensed under [CC BY 4.0](https://cr
 
 ## technical overview of engine
 
-specie = singular for species
-species = plural for species
+specie = singular for species, species = plural for species
 
 - each cell can belong to a specie each with its own `B/S` rule
 - the world is a wrapped torodial grid
