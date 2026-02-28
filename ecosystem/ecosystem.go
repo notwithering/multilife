@@ -212,9 +212,7 @@ func (e *Ecosystem) stepRange(startY, endY int, collectStats bool) (workerPopula
 				shouldBirth := specie.Rule.BirthSet[neighborsOfSpecie]
 				differentSpecie := specieId != cellId
 
-				canCompete := shouldBirth &&
-					((cellIsAlive && differentSpecie) ||
-						(!cellIsAlive))
+				canCompete := shouldBirth && (!cellIsAlive || differentSpecie)
 
 				if canCompete {
 					candidates = append(candidates, specieId)

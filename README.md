@@ -49,16 +49,14 @@ if the current cell is alive:
 
 each specie independently checks if it can birth at the current cells location using its own neighbor count from `specieNeighbors[specie.Id]`
 
-a specie is added as a candidate for birth if the current cell meets its birth condition AND:
+a specie is added as a candidate for birth if:
 
-- the cell is alive but the specie is different from the current cells specie OR
-- the cell is dead
-
+- the cell meets its birth condition AND
+	- the cell is dead OR
+	- the cell is alive but the specie is different from the current cells specie
 
 ```go
-canCompete := shouldBirth &&
-	((cellIsAlive && differentSpecie) ||
-		(!cellIsAlive))
+canCompete := shouldBirth && (!cellIsAlive || differentSpecie)
 ````
 
 since species can replace other species cells, survival doesnt make a cell invincible
