@@ -44,7 +44,7 @@ func (b *Buffer) DrawChar(x, y int, col color.Color, font *font.Font, character 
 	b8b := uint8(b8 >> 8)
 
 	for rowNum, row := range glyph {
-		for colBit := range font.Width {
+		for colBit := range 3 {
 			if row&(1<<(2-colBit)) != 0 {
 				px := x + colBit
 				py := y + rowNum + font.YOffset
