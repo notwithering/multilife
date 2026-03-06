@@ -10,31 +10,47 @@ func (b *Buffer) PixelOffset(x, y int) int {
 	return (y*b.Width + x) * 3
 }
 
+func rgb8(c color.Color) (uint8, uint8, uint8, uint8) {
+	switch v := c.(type) {
+	case color.RGBA:
+		return v.R, v.G, v.B, v.A
+	case color.NRGBA:
+		return v.R, v.G, v.B, v.A
+	case color.Gray:
+		return v.Y, v.Y, v.Y, 255
+	case color.Alpha:
+		return 0, 0, 0, v.A
+	default:
+		r, g, b, a := c.RGBA()
+		return uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), uint8(a >> 8)
+	}
+}
+
 func (b *Buffer) SetPixel(x, y int, col color.Color) {
 	if x < 0 || x >= int(b.Width) || y < 0 || y >= int(b.Height) {
 		return
 	}
 
-	newR, newG, newB, newA := col.RGBA()
+	newR, newG, newB, newA := rgb8(col)
 	if newA == 0 {
 		return
 	}
 
 	idx := b.PixelOffset(x, y)
 
-	if newA >= 255 {
-		b.Data[idx+0] = uint8(newR)
-		b.Data[idx+1] = uint8(newG)
-		b.Data[idx+2] = uint8(newB)
+	if newA == 255 {
+		b.Data[idx+0] = newR
+		b.Data[idx+1] = newG
+		b.Data[idx+2] = newB
 	} else {
 		oldRf := float32(b.Data[idx+0]) / 255
 		oldGf := float32(b.Data[idx+1]) / 255
 		oldBf := float32(b.Data[idx+2]) / 255
 
-		newRf := float32(newR>>8) / 255
-		newGf := float32(newG>>8) / 255
-		newBf := float32(newB>>8) / 255
-		newAf := float32(newA>>8) / 255
+		newRf := float32(newR) / 255
+		newGf := float32(newG) / 255
+		newBf := float32(newB) / 255
+		newAf := float32(newA) / 255
 
 		b.Data[idx+0] = uint8((newRf*newAf + oldRf*(1-newAf)) * 255)
 		b.Data[idx+1] = uint8((newGf*newAf + oldGf*(1-newAf)) * 255)
@@ -45,7 +61,7 @@ func (b *Buffer) SetPixel(x, y int, col color.Color) {
 func (b *Buffer) DrawRect(x, y, w, h int, col color.Color) {
 	for yy := y; yy < y+h; yy++ {
 		for xx := x; xx < x+w; xx++ {
-			b.SetPixel(x, y, col)
+			b.SetPixel(xx, yy, col)
 		}
 	}
 }
@@ -53,23 +69,12 @@ func (b *Buffer) DrawRect(x, y, w, h int, col color.Color) {
 func (b *Buffer) DrawChar(x, y int, col color.Color, font *font.Font, character rune) {
 	glyph := font.Get(character)
 
-	r8, g8, b8, _ := col.RGBA()
-	r8b := uint8(r8 >> 8)
-	g8b := uint8(g8 >> 8)
-	b8b := uint8(b8 >> 8)
-
 	for rowNum, row := range glyph {
 		for colBit := range 3 {
 			if row&(1<<(2-colBit)) != 0 {
 				px := x + colBit
 				py := y + rowNum + font.YOffset
-				if px < 0 || px >= b.Width || py < 0 || py >= b.Height {
-					continue
-				}
-				idx := b.PixelIndex(px, py)
-				b.Data[idx+0] = r8b
-				b.Data[idx+1] = g8b
-				b.Data[idx+2] = b8b
+				b.SetPixel(px, py, col)
 			}
 		}
 	}
