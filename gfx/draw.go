@@ -10,6 +10,38 @@ func (b *Buffer) PixelIndex(x, y int) int {
 	return (y*b.Width + x) * 3
 }
 
+func (b *Buffer) SetPixel(x, y int, col color.Color) {
+	if x < 0 || x >= int(b.Width) || y < 0 || y >= int(b.Height) {
+		return
+	}
+
+	newR, newG, newB, newA := col.RGBA()
+	if newA == 0 {
+		return
+	}
+
+	idx := b.PixelIndex(x, y)
+
+	if newA >= 255 {
+		b.Data[idx+0] = uint8(newR)
+		b.Data[idx+1] = uint8(newG)
+		b.Data[idx+2] = uint8(newB)
+	} else {
+		oldRf := float32(b.Data[idx+0]) / 255
+		oldGf := float32(b.Data[idx+1]) / 255
+		oldBf := float32(b.Data[idx+2]) / 255
+
+		newRf := float32(newR>>8) / 255
+		newGf := float32(newG>>8) / 255
+		newBf := float32(newB>>8) / 255
+		newAf := float32(newA>>8) / 255
+
+		b.Data[idx+0] = uint8((newRf*newAf + oldRf*(1-newAf)) * 255)
+		b.Data[idx+1] = uint8((newGf*newAf + oldGf*(1-newAf)) * 255)
+		b.Data[idx+2] = uint8((newBf*newAf + oldBf*(1-newAf)) * 255)
+	}
+}
+
 func (b *Buffer) DrawRect(x, y, w, h int, col color.Color) {
 	r1, g1, b1, a1 := col.RGBA()
 	r1f := float32(r1>>8) / 255
