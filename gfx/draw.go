@@ -66,7 +66,7 @@ func (b *Buffer) DrawChar(x, y int, col color.Color, font *font.Font, character 
 				if px < 0 || px >= b.Width || py < 0 || py >= b.Height {
 					continue
 				}
-				idx := b.pixelIndex(px, py)
+				idx := b.PixelIndex(px, py)
 				b.Data[idx+0] = r8b
 				b.Data[idx+1] = g8b
 				b.Data[idx+2] = b8b
