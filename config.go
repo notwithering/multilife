@@ -69,6 +69,8 @@ func newConfig() config {
 	// stats
 
 	config.Stats.Infinite = config.Main.Infinite
+	config.Stats.Enabled = true
+	config.Stats.Interval = 1
 
 	config.Stats.Basic.Enabled = true
 	config.Stats.Basic.TotalFrames = config.Main.VideoLength

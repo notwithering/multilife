@@ -7,7 +7,7 @@ import (
 )
 
 func (s *StatsPrinter) ShouldTimings() bool {
-	return s.config.Timings.Enabled && s.currentFrame%s.config.Timings.Interval == 0
+	return s.config.Enabled && s.config.Timings.Enabled && s.currentFrame%s.config.Timings.Interval == 0
 }
 
 // Render: 2.2398ms (500/s)

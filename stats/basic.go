@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+func (s *StatsPrinter) ShouldBasic() bool {
+	return s.config.Enabled
+}
+
 func (s *StatsPrinter) writeBasicStats(sb *strings.Builder) {
 	// Frame: 757/1800 (42.1%)
 	sb.WriteString("Frame: ")
@@ -47,8 +51,12 @@ func (s *StatsPrinter) writeBasicStats(sb *strings.Builder) {
 }
 
 func (s *StatsPrinter) StartedLoop() {
-	s.loopStart = time.Now()
+	if s.ShouldBasic() {
+		s.loopStart = time.Now()
+	}
 }
 func (s *StatsPrinter) EndedLoop() {
-	s.loopEnd = time.Now()
+	if s.ShouldBasic() {
+		s.loopEnd = time.Now()
+	}
 }

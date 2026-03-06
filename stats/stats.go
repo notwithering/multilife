@@ -41,6 +41,10 @@ func NewStatsPrinter(config Config, species []*specie.CompiledSpecie) *StatsPrin
 }
 
 func (s *StatsPrinter) Print() {
+	if !s.config.Enabled || s.currentFrame%s.config.Interval != 0 {
+		return
+	}
+
 	var printFuncs []func(*strings.Builder)
 
 	if s.config.Basic.Enabled {

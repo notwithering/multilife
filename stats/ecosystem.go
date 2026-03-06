@@ -11,7 +11,7 @@ import (
 )
 
 func (s *StatsPrinter) ShouldEcosystem() bool {
-	return s.config.Ecosystem.Enabled && s.currentFrame%s.config.Ecosystem.Interval == 0
+	return s.config.Enabled && s.config.Ecosystem.Enabled && s.currentFrame%s.config.Ecosystem.Interval == 0
 }
 
 func (s *StatsPrinter) UpdateEcosystemStats(stats ecosystem.Stats) {
