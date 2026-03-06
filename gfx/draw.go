@@ -6,7 +6,7 @@ import (
 	"github.com/notwithering/multilife/gfx/font"
 )
 
-func (b *Buffer) PixelIndex(x, y int) int {
+func (b *Buffer) PixelOffset(x, y int) int {
 	return (y*b.Width + x) * 3
 }
 
@@ -20,7 +20,7 @@ func (b *Buffer) SetPixel(x, y int, col color.Color) {
 		return
 	}
 
-	idx := b.PixelIndex(x, y)
+	idx := b.PixelOffset(x, y)
 
 	if newA >= 255 {
 		b.Data[idx+0] = uint8(newR)
