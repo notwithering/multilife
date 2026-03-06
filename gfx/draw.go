@@ -43,28 +43,11 @@ func (b *Buffer) SetPixel(x, y int, col color.Color) {
 }
 
 func (b *Buffer) DrawRect(x, y, w, h int, col color.Color) {
-	r1, g1, b1, a1 := col.RGBA()
-	r1f := float32(r1>>8) / 255
-	g1f := float32(g1>>8) / 255
-	b1f := float32(b1>>8) / 255
-	a1f := float32(a1>>8) / 255
-
 	for yy := y; yy < y+h; yy++ {
 		for xx := x; xx < x+w; xx++ {
-			if xx < 0 || xx >= int(b.Width) || yy < 0 || yy >= int(b.Height) {
-				continue
-			}
-			idx := b.PixelIndex(xx, yy)
-			r0f := float32(b.Data[idx+0]) / 255
-			g0f := float32(b.Data[idx+1]) / 255
-			b0f := float32(b.Data[idx+2]) / 255
-
-			b.Data[idx+0] = uint8((r1f*a1f + r0f*(1-a1f)) * 255)
-			b.Data[idx+1] = uint8((g1f*a1f + g0f*(1-a1f)) * 255)
-			b.Data[idx+2] = uint8((b1f*a1f + b0f*(1-a1f)) * 255)
+			b.SetPixel(x, y, col)
 		}
 	}
-
 }
 
 func (b *Buffer) DrawChar(x, y int, col color.Color, font *font.Font, character rune) {
