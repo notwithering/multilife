@@ -6,7 +6,7 @@ import (
 	"github.com/notwithering/multilife/gfx/font"
 )
 
-func (b *Buffer) pixelIndex(x, y int) int {
+func (b *Buffer) PixelIndex(x, y int) int {
 	return (y*b.Width + x) * 3
 }
 
@@ -22,7 +22,7 @@ func (b *Buffer) DrawRect(x, y, w, h int, col color.Color) {
 			if xx < 0 || xx >= int(b.Width) || yy < 0 || yy >= int(b.Height) {
 				continue
 			}
-			idx := b.pixelIndex(xx, yy)
+			idx := b.PixelIndex(xx, yy)
 			r0f := float32(b.Data[idx+0]) / 255
 			g0f := float32(b.Data[idx+1]) / 255
 			b0f := float32(b.Data[idx+2]) / 255
