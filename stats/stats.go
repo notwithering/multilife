@@ -41,10 +41,6 @@ func NewStatsPrinter(config Config, species []*specie.CompiledSpecie) *StatsPrin
 }
 
 func (s *StatsPrinter) Print() {
-	if !s.config.Basic.Enabled && !s.config.Ecosystem.Enabled {
-		return
-	}
-
 	var printFuncs []func(*strings.Builder)
 
 	if s.config.Basic.Enabled {
