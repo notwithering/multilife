@@ -7,11 +7,7 @@ import (
 	"time"
 )
 
-func (s *StatsPrinter) ShouldBasic() bool {
-	return s.config.Basic.Enabled && s.currentFrame%s.config.Basic.Interval == 0
-}
-
-func (s *StatsPrinter) basicStatsText(sb *strings.Builder) {
+func (s *StatsPrinter) writeBasicStats(sb *strings.Builder) {
 	// Frame: 757/1800 (42.1%)
 	sb.WriteString("Frame: ")
 	if !s.config.Infinite {
@@ -24,42 +20,6 @@ func (s *StatsPrinter) basicStatsText(sb *strings.Builder) {
 	} else {
 		sb.WriteString(strconv.Itoa(s.currentFrame + 1))
 	}
-	sb.WriteByte('\n')
-
-	// Render: 2.2398ms (500/s)
-	sb.WriteString("Render: ")
-	renderTime := s.renderEnd.Sub(s.renderStart)
-	sb.WriteString(renderTime.String())
-	sb.WriteString(" (")
-	fmt.Fprintf(sb, "%.2f", 1.0/renderTime.Seconds())
-	sb.WriteString("/s)")
-	sb.WriteByte('\n')
-
-	// UI: 50us (30000/s)
-	sb.WriteString("UI: ")
-	uiTime := s.uiEnd.Sub(s.uiStart)
-	sb.WriteString(uiTime.String())
-	sb.WriteString(" (")
-	fmt.Fprintf(sb, "%.2f", 1.0/uiTime.Seconds())
-	sb.WriteString("/s)")
-	sb.WriteByte('\n')
-
-	// Step: 30.2155342ms (120/s)
-	sb.WriteString("Step: ")
-	stepTime := s.stepEnd.Sub(s.stepStart)
-	sb.WriteString(stepTime.String())
-	sb.WriteString(" (")
-	fmt.Fprintf(sb, "%.2f", 1.0/stepTime.Seconds())
-	sb.WriteString("/s)")
-	sb.WriteByte('\n')
-
-	// Frame: 50.2155342ms (20/s)
-	sb.WriteString("Frame: ")
-	frameTime := s.frameEnd.Sub(s.frameStart)
-	sb.WriteString(frameTime.String())
-	sb.WriteString(" (")
-	fmt.Fprintf(sb, "%.2f", 1.0/frameTime.Seconds())
-	sb.WriteString("/s)")
 	sb.WriteByte('\n')
 
 	// Elapsed: 0m12s502ms (1m4s102ms)
@@ -91,49 +51,4 @@ func (s *StatsPrinter) StartedLoop() {
 }
 func (s *StatsPrinter) EndedLoop() {
 	s.loopEnd = time.Now()
-}
-
-func (s *StatsPrinter) StartedFrame() {
-	s.currentFrame++
-	if s.ShouldBasic() {
-		s.frameStart = time.Now()
-	}
-}
-func (s *StatsPrinter) EndedFrame() {
-	if s.ShouldBasic() {
-		s.frameEnd = time.Now()
-	}
-}
-
-func (s *StatsPrinter) StartedRender() {
-	if s.ShouldBasic() {
-		s.renderStart = time.Now()
-	}
-}
-func (s *StatsPrinter) EndedRender() {
-	if s.ShouldBasic() {
-		s.renderEnd = time.Now()
-	}
-}
-
-func (s *StatsPrinter) StartedUI() {
-	if s.ShouldBasic() {
-		s.uiStart = time.Now()
-	}
-}
-func (s *StatsPrinter) EndedUI() {
-	if s.ShouldBasic() {
-		s.uiEnd = time.Now()
-	}
-}
-
-func (s *StatsPrinter) StartedStep() {
-	if s.ShouldBasic() {
-		s.stepStart = time.Now()
-	}
-}
-func (s *StatsPrinter) EndedStep() {
-	if s.ShouldBasic() {
-		s.stepEnd = time.Now()
-	}
 }

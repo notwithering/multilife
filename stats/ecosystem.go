@@ -18,13 +18,14 @@ func (s *StatsPrinter) UpdateEcosystemStats(stats ecosystem.Stats) {
 	s.ecosystemStats = stats
 }
 
-func (s *StatsPrinter) ecosystemStatsText(sb *strings.Builder) {
+func (s *StatsPrinter) writeEcosystemStats(sb *strings.Builder) {
 	// sb.WriteString("warning: ecosystem stats can add up to 100us/frame (+1s/1,000,000 frames)")
 	// sb.WriteByte('\n')
 
 	var averageDensity float64
 	for _, population := range s.ecosystemStats.PopulationBySpecie {
-		averageDensity += float64(population) / float64(s.ecosystemStats.TotalPopulation)
+		specieDensity := float64(population) / float64(s.ecosystemStats.TotalPopulation)
+		averageDensity += specieDensity
 	}
 	averageDensity = averageDensity / float64(len(s.species))
 
@@ -46,8 +47,11 @@ func (s *StatsPrinter) ecosystemStatsText(sb *strings.Builder) {
 		fmt.Fprintf(sb, "%s%d;%d;%dm", sgr.FgColorRGB, c.R, c.G, c.B)
 
 		// Conway's Life: 50423/99256 (50.8%)
-		sb.WriteString(specie.Name + ": ")
-		sb.WriteString(strconv.Itoa(population) + "/" + strconv.Itoa(s.ecosystemStats.TotalPopulation))
+		sb.WriteString(specie.Name)
+		sb.WriteString(": ")
+		sb.WriteString(strconv.Itoa(population))
+		sb.WriteString("/")
+		sb.WriteString(strconv.Itoa(s.ecosystemStats.TotalPopulation))
 		sb.WriteString(" (")
 		fmt.Fprintf(sb, "%.1f", density*100)
 		sb.WriteString("%)")

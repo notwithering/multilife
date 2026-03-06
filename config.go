@@ -71,13 +71,14 @@ func newConfig() config {
 	config.Stats.Infinite = config.Main.Infinite
 
 	config.Stats.Basic.Enabled = true
-	config.Stats.Basic.Interval = 30
+	config.Stats.Basic.TotalFrames = config.Main.VideoLength
 	config.Stats.Basic.FPS = config.Renderer.Video.FPS
 
-	config.Stats.Ecosystem.Enabled = true
-	config.Stats.Ecosystem.Interval = 50
+	config.Stats.Timings.Enabled = true
+	config.Stats.Timings.Interval = 50
 
-	config.Stats.Basic.TotalFrames = config.Main.VideoLength
+	config.Stats.Ecosystem.Enabled = true
+	config.Stats.Ecosystem.Interval = 10
 
 	return config
 }
