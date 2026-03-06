@@ -57,11 +57,8 @@ loop:
 
 		statsPrinter.StartedUI()
 		ui.Draw(buffer)
-		statsPrinter.EndedUI()
-
-		statsPrinter.StartedStep()
 		ren.Write(buffer)
-		statsPrinter.EndedStep()
+		statsPrinter.EndedUI()
 
 		statsPrinter.StartedStep()
 		eco.Step(statsPrinter.ShouldEcosystem())
