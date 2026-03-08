@@ -2,6 +2,7 @@ package stats
 
 import (
 	"image/color"
+	"math"
 )
 
 func lerp(a, b uint8, x float64) uint8 {
@@ -23,7 +24,7 @@ func lerpColor(c0, c1 color.Color, x float64) color.Color {
 func gradient(x float64, colors ...color.Color) color.Color {
 	n := len(colors)
 	if n == 0 {
-		return color.RGBA{}
+		return nil
 	}
 	if n == 1 {
 		return colors[0]
@@ -34,6 +35,9 @@ func gradient(x float64, colors ...color.Color) color.Color {
 	}
 	if x >= 1 {
 		return colors[n-1]
+	}
+	if math.IsNaN(x) {
+		return colors[0]
 	}
 
 	segmentSize := 1.0 / float64(n-1)
