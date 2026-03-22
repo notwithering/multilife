@@ -1,6 +1,6 @@
 package font
 
-var Miniwi = &Font{
+var FontMiniwi = &Font{
 	Width:   3,
 	Height:  5,
 	YOffset: -1,

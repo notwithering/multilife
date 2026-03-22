@@ -2,7 +2,7 @@ package font
 
 import "unicode"
 
-var Nanofont3x4 = &Font{
+var FontNanofont3x4 = &Font{
 	Width:   3,
 	Height:  3,
 	YOffset: -1,
